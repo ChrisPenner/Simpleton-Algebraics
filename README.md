@@ -5,7 +5,7 @@ This document is essentially a mirror of the Fantasy Land Spec with each
 section simplified with less complicated descriptions. It's the version of the
 spec that I wish had existed when I first started learning this stuff.
 
-We're going to be talking about the following Algebraic types, if you're
+We're going to be talking about the following algebraic types, if you're
 interested in the more cranial-explosive version you can read find it in the
 [Fantasy Land Spec](https://github.com/fantasyland/fantasy-land#profunctor).
 
@@ -25,10 +25,16 @@ interested in the more cranial-explosive version you can read find it in the
 -   [Profunctor](#profunctor)
 
 
-## General
+# Preface
 
-So to start off, why are you here? Basically an 'Algebra' is a combination of
-three things.
+So to start off, why are you here? Well; you're here to learn about some algebraic types and how
+they interact. Why learn algebra? The algebras that follow encapsulate many patterns that pop up
+in everyday programming, by formalizing them we can recognize and abstract over them, often using
+existing tools and research to make our job easier! Think of this as a kind of a collection of
+functional design patterns.
+
+What is an algebra? Basically an algebra is a combination of
+three things:
 
 -   A set of values which fit the algebra
 -   A set of operations or functions you can perform on the values. There's a
@@ -41,7 +47,7 @@ three things.
 -   A set of laws which the algebra must obey
 
 
-Each of the Algebraic types we specify below can stand on their own except
+Each of the algebraic types we specify below can stand on their own except
 where they specify dependencies on other types. You can see the dependencies in
 the figure below.
 
@@ -60,37 +66,61 @@ with.
         which are any of our value types
     -   A **list**: which contains a bunch of ordered values
 
-And off we go! Let's take a look at some of our Algebras.
+We'll also be using some notation to express ideas; the basic notation follows
+the Hindley Milner type system which sounds scary, but it's really not! It's the
+same notation languages like Haskell use for their type annotations. Here's an example:
+
+```haskell
+map :: (a -> b) -> [a] -> [b]
+```
+
+This reads as: The function `map` takes an argument of type `(a -> b)` and a list of objects of type `a`
+and returns a list of objects of type `b`.
+
+We notice that the bracketed `(a -> b)` makes this function signature mean differently than `a -> b -> [a] -> [b]`
+which takes an `a`, a `b` and a list of `a`s and returns a list of `b`s.
+
+Since we're using instance methods here rather than just functions the object we're operating on will come first, so
+we'd write map as:
+
+```haskell
+map :: [a] ~> (a -> b) -> [b]
+```
+
+One last thing; if you see something like: `Monoid m => [m] -> m` it means that in order for the function to work
+`m` has to have a `Monoid` defined!
+
+And off we go! Let's take a look at some of our algebras.
 
 ## Algebras
 
-For each of the following Algebras we'll list the following:
+For each of the following algebras we'll list the following:
 
--   Rules: Each Algebra has to behave in a certain way for it to be useful.
+-   Rules: Each algebra has to behave in a certain way for it to be useful.
 -   Required operations: These are a set of functions or behaviours which must
     be defined for your algebra for it to fit the given class. How you define
     them is your choice, so long as each operation also follows its set of
     rules!
 
 
-### Setoid
+# Setoid
 
 Required operations: `equals`
 
-#### Rules
+## Rules
 
 Anything that wants to call itself a Setoid must behave according to these
 rules. For a Setoid the rules we care about all have to do with the `equals`
 operation.
 
-##### Identity Crisis
+### Identity Crisis
 
 The first rule is that if we check whether a thing `equals` itself then it
 better say yes! for instance if my dog Rover is a Setoid then
 `Rover.equals(Rover)` should be `true`! The bean counters in the lab call this
 nifty trick *Reflexivity*, the shorthand for it is `a.equals(a) === true`.
 
-##### The Flip-Flop
+### The Flip-Flop
 
 The second rule is that if we check whether `A.equals(B)`, then we better get
 the same answer as when we check if `B.equals(A)`. Let's say I get sick of
@@ -100,7 +130,7 @@ The same goes for things that aren't equal, so since `Apple.equals(Orange)` is
 false, then so is `Orange.equals(Apple)`. The fancy-schmancy word for this is
 *Symmetry*, and the shorthand goes like this: `a.equals(b) === b.equals(a)`
 
-##### Follow the dots
+### Follow the dots
 
 The last rule of Setoids goes like this; if `A.equals(B)` and `B.equals(C)` are
 both true, then `A.equals(C)` better also be true! This makes sense if you think about it,
@@ -110,8 +140,9 @@ other, then we know Alex and Charlie are identical too! Looks like we've got a s
 When you can follow a chain of `equals` to find new information we say that
 `equals` is *Transitive*.
 
+## Methods
 
-#### `equals` method
+### `equals`
 
 ```hs
 equals :: Setoid a => a ~> a -> Boolean
@@ -129,7 +160,7 @@ A value which has a Setoid must provide an `equals` method. The
 
 2. `equals` must return a boolean (`true` or `false`).
 
-### Semigroup
+# Semigroup
 
 1. `a.concat(b).concat(c)` is equivalent to `a.concat(b.concat(c))` (associativity)
 
